@@ -1,37 +1,40 @@
-%smallestKset List K = write ("Sum\ti\tj\tsubList\n")
+%smallestKset List K = write ("Sum\ti\tj\tsubList\n" ++ )
 
 listSum([], 0).
 listSum([Head | Tail], Sum) :-
     listSum(Tail, Restsum),
     Sum is Head + Restsum.
 
-subListI(List, 0, List).
-subListI([_ | Tail], I, Sub) :- 
-    I>0,
-    I2 is I-1,
-    subListI(Tail, I2, Sub).
+firstKTuples([], _, []).
+firstKTuples(_, 0, []).
+firstKTuples([Head | Tail], K, [Head | Result]) :-
+    K2 is K -1,
+    firstKTuples(Tail, K2, Result)
 
-subListJ(_, 0, []).
-subListJ([Head | Tail], I, [Head | Sub]) :- 
-    I>0,
-    I2 is I-1,
-    subListJ(Tail, I2, Sub).
-
-subList(List, I, J, Sublist) :-
-    I >= 0,
-    J >= I,
-    subListI(List, I, Remaining),
-    Len is J - I + 1,
-    subListJ(Remaining, Len, Sublist).
-
-iterI(List, [(Size, )]):-
-    N is length(List),
-    Size is listSum(List),
+print_tuple((Sum, I, J, Sub)) :-
+    format("~w\t~w\t~w\t~w~n", [Sum, I, J, Sub]).
 
 
-allSubLists([List], [(Size, I, J, Sub)]):-
-    
-    
+
+insertionSort([], []).
+insertionSort([Head | Tail], Result) :- 
+    insertionSort(Tail, SortedTail),
+    insert(Head, SortedTail, Result).
+
+% insert(X, [], [X]).
+% insert(X, [Head | Tail], [X, Head | Tail]) :- 
+%     X =< Head.
+% insert(X, [Head | Tail], [Head | R]) :- 
+%     X > Head, 
+%     insert(X, Tail, R).
+
+insert(X, [], [X]).
+insert((SX, I1, J1, Sub1), [(SY, I2, J2, Sub2) | T], [(SX, I1, J1, Sub1), (SY, I2, J2, Sub2) | T]) :-
+    SX =< SY.
+insert((SX, I1, J1, Sub1), [(SY, I2, J2, Sub2) | T], [(SY, I2, J2, Sub2) | R]) :-
+    SX > SY,
+    insert((SX, I1, J1, Sub1), T, R).
+
 allSubLists(List, Result) :-
     length(List, Len),
     iteri(List, 0, Len, Result).
@@ -44,8 +47,6 @@ iteri(List, I, Len, Result) :-
     I1 is I + 1,
     iteri(List, I1, Len, Part2),
     append(Part1, Part2, Result).
-
-
 
 iterj(_, _, J, Len, []) :- J >= Len, !.
 iterj(List, I, J, Len, [(Sum, I, J, Sub) | Rest]) :-
