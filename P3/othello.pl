@@ -43,8 +43,15 @@
 
 
 
-
-
+directions(
+	[[0, -1], %North
+	[1, -1], %NorthEast
+	[1, 0],  % East
+	[1, 1],  % SouthEast
+	[0, 1],  % South
+	[-1, 1],  % SoutWest
+	[-1, 0],  % West
+	[-1, -1]]). % NorthWest
 
 
 % /* ------------------------------------------------------ */
@@ -68,10 +75,10 @@
 
 initBoard([ [.,.,.,.,.,.], 
             [.,.,.,.,.,.],
-	    [.,.,1,2,.,.], 
-	    [.,.,2,1,.,.], 
-            [.,.,.,.,.,.], 
-	    [.,.,.,.,.,.] ]).
+	    	[.,.,1,2,.,.], 
+	    	[.,.,2,1,.,.], 
+        	[.,.,.,.,.,.], 
+	    	[.,.,.,.,.,.] ]).
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
 %
@@ -80,7 +87,7 @@ initBoard([ [.,.,.,.,.,.],
 %%%  holds iff InitialState is the initial state and 
 %%%  InitialPlyr is the player who moves first. 
 
-initialize(InitialState, InitialPlyr) :- 
+initialize(InitialState, 1) :- 
 	initBoard(InitialState).
 
 
@@ -95,18 +102,25 @@ initialize(InitialState, InitialPlyr) :-
 
 winner(State, Plyr) :- 
 	terminal(State), 
-	winnerIs(State, 1).
-	
-winner(State, Plyr) :- 
-	terminal(State), 
-	winnerIs(State, 2), 
-	notFunc(tie(State)).
+	winnerIs(State, Plyr), 
+	showState(State).
 
 % ; binds harder?
 winnerIs(State, Plyr) :-
-	 (setof(Position, get(State, Position, 1),ListPlyr1) ; Plyr1Score is 0),
-	 (setof(Position, get(State, Position, 2),ListPlyr1) ; Plyr2Score is 0),
-	 (Plyr1Score < Plyr2Score) -> Plyr = 1 ; Plyr = 2. 
+	 (
+		setof(Position, get(State, Position, 1),ListPlyr1), 
+		length(ListPlyr1, Plyr1Score)
+		; 
+		Plyr1Score is 0
+	),
+	(
+		setof(Position, get(State, Position, 2),ListPlyr2),
+		length(ListPlyr1, Plyr2Score)
+		; 
+		Plyr2Score is 0
+	),
+	!,
+	((Plyr1Score < Plyr2Score) -> Plyr = 1 ; (Plyr2Score < Plyr1Score) -> Plyr = 2). 
 
 
 % Just a not function
@@ -127,8 +141,19 @@ notFunc(Statment).
 %    - true if terminal State is a "tie" (no winner) 
 
 tie(State) :- 
-	setof(Position, get(State, Position, 1),ListPlyr1) ; Plyr1Score is 0,
-	setof(Position, get(State, Position, 2),ListPlyr1) ; Plyr2Score is 0,
+	terminal(State),
+	 (
+		setof(Position, get(State, Position, 1),ListPlyr1), 
+		length(ListPlyr1, Plyr1Score)
+		; 
+		Plyr1Score is 0
+	),
+	(
+		setof(Position, get(State, Position, 2),ListPlyr2),
+		length(ListPlyr1, Plyr2Score)
+		; 
+		Plyr2Score is 0
+	),
 	Plyr1Score == Plyr2Score. 
 
 
@@ -139,9 +164,10 @@ tie(State) :-
 %% define terminal(State). 
 %   - true if State is a terminal   
 
-terminal(State) :- 
-	moves(1, State, [n]), 
-	moves(2, State, [n]). 
+terminal(State) :-
+    \+ (moves(1, State, MvList1), MvList1 \= [n]),
+    \+ (moves(2, State, MvList2), MvList2 \= [n]).
+
 
 
 
@@ -176,9 +202,14 @@ printList([H | L]) :-
 %
 
 moves(Plyr, State, MvList) :-
-	setof([X, Y],
-		 get(State, validMove(Plyr, State, [X,Y])),
-		  MvList) ; [n].
+    findall([X, Y], validmove(Plyr, State, [X, Y]), Moves),
+    (
+        Moves = [] -> MvList = [n] ;
+        MvList = Moves
+    ),
+    format("Player ~w has moves: ~w~n", [Plyr, MvList]).
+
+
 
 
 
@@ -191,18 +222,62 @@ moves(Plyr, State, MvList) :-
 %     state) and NextPlayer (i.e. the next player who will move).
 %
 
-nextState(Plry, Move, State, NewState, NextPlyr) :-
-	newState(Plry, Move, State, NewState),
-	newPlyr(Plyr, NextPlyr). 
+nextState(Plyr, Move, State, NewState, NextPlyr) :-
+	validmove(Plyr, State, Move), 
+	flipAllDirection(Plyr, State, Move, NewState), !,
+	showState(NewState),
+	newPlyr(Plyr, NewState, NextPlyr), 
+	!.
 
 newPlyr(Plyr, State, NextPlyr) :-
-	Plyr == 1 -> NextPlyr is 2 ; NextPlyr is 1, 
-	moves(NextPlyr, State, MvList),
-	legnth(MvList, X),
-	X > 0,!, 
+	opponent(Plyr, Opponent), 
+	moves(Opponent, State, MvList),
+	moves(Plyr, State, MvList),
+	length(MvList, X),
+	(X > 0 -> NextPlyr = Opponent ; NextPlyr = Plyr). 
+
+flipAllDirection(Plyr, State, Move, NewState) :-
+	writeln('Trying to flip now: '),
+    opponent(Plyr, Opponent),
+    testFlip(Plyr, State, Opponent, Move, [0, -1], S1),    % North
+    testFlip(Plyr, S1,   Opponent, Move, [1, -1], S2),     % NorthEast
+    testFlip(Plyr, S2,   Opponent, Move, [1, 0], S3),      % East
+    testFlip(Plyr, S3,   Opponent, Move, [1, 1], S4),      % SouthEast
+    testFlip(Plyr, S4,   Opponent, Move, [0, 1], S5),      % South
+    testFlip(Plyr, S5,   Opponent, Move, [-1, 1], S6),     % SouthWest
+    testFlip(Plyr, S6,   Opponent, Move, [-1, 0], S7),     % West
+    testFlip(Plyr, S7,   Opponent, Move, [-1, -1], FinalState),  % NorthWest
+	writeln('Done flipping: '), 
+	showState(FinalState).
+
+testFlip(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
+	(
+		checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]) ->
+			flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], TempState),
+			set(TempState, NewState, [X, Y], Plyr)
+
+		;
+			NewState = State
+	).
 
 
+flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
+	X1 is X + DirX,
+	Y1 is Y + DirY,
+	X1 >= 0, X1 =< 5, Y1 >= 0, Y1 =< 5,
+	(
+		get(State, [X1, Y1], Plyr),
+		NewState = State
+		;
+		writeln(flip(X1, Y1)),
+		set(State, TempState, [X1, Y1], Plyr),
+		flipDir(Plyr, TempState, Opponent, [X1, Y1], [DirX, DirY], NewState)
+		
+	).
 
+
+opponent(Plyr, Opponent) :-
+	(Plyr == 1 -> Opponent is 2 ; Opponent is 1). 
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
@@ -213,7 +288,29 @@ newPlyr(Plyr, State, NextPlyr) :-
 %   - true if Proposed move by Plyr is valid at State.
 
 validmove(Plyr, State, Proposed) :- 
-	
+	opponent(Plyr, Opponent), 
+	get(State, Proposed, '.'),
+	directions(Dirs),
+	member([DirX, DirY], Dirs),
+	checkDirection(Plyr, State,  Opponent, Proposed, [DirX, DirY]).
+
+checkDirection(Plyr, State,  Opponent, [X, Y], [DirX, DirY]) :-
+	X1 is X + DirX,
+	Y1 is Y + DirY,
+	get(State, [X1, Y1], Opponent), 
+	checkDir(Plyr, State,  Opponent, [X1, Y1], [DirX, DirY]). 
+
+checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]) :-
+	number(X), number(Y),
+	X1 is X + DirX,
+	Y1 is Y + DirY,
+	(
+		get(State, [X1, Y1], Plyr) 
+	;
+		get(State, [X1, Y1], Opponent),
+		checkDir(Plyr, State, Opponent, [X1, Y1], [DirX, DirY])
+	). 
+
 
 
 
@@ -229,8 +326,15 @@ validmove(Plyr, State, Proposed) :-
 %          the value of state (see handout on ideas about
 %          good heuristics.
 
-
-
+h(State, Val) :-
+	terminal(State), 
+	(
+		winnerIs(State, 2) -> Val is 100
+		;
+		winnerIs(State, 1) -> Val is -100
+		;
+		tie(State) -> Val is 0
+	).
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
@@ -242,7 +346,7 @@ validmove(Plyr, State, Proposed) :-
 %     of all states.
 
 
-
+lowerBound(-101).
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
@@ -254,7 +358,7 @@ validmove(Plyr, State, Proposed) :-
 %     of all states.
 
 
-
+upperBound(101).
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
