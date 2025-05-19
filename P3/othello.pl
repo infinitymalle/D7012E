@@ -73,6 +73,13 @@ directions(
 %
 % given helper: Inital state of the board
 
+% initBoard([ [.,.,.,.,.,.], 
+%             [.,.,.,.,.,.],
+% 	    	[.,.,1,2,.,.], 
+% 	    	[.,.,2,1,.,.], 
+%         	[.,.,.,.,.,.], 
+% 	    	[.,.,.,.,.,.] ]).
+
 initBoard([ [.,.,.,.,.,.], 
             [.,.,.,.,.,.],
 	    	[.,.,1,2,.,.], 
@@ -164,11 +171,9 @@ tie(State) :-
 %% define terminal(State). 
 %   - true if State is a terminal   
 
-terminal(State) :-
+terminal(State) :- 
     \+ (moves(1, State, MvList1), MvList1 \= [n]),
     \+ (moves(2, State, MvList2), MvList2 \= [n]).
-
-
 
 
 
@@ -202,9 +207,10 @@ printList([H | L]) :-
 %
 
 moves(Plyr, State, MvList) :-
-    findall([X, Y], validmove(Plyr, State, [X, Y]), Moves),
+	findall(inBounds(X, Y), validmove(Plyr, State, [X, Y]), Moves),
     (
-        Moves = [] -> MvList = [n] ;
+        Moves = [] -> MvList = [n]
+		;
         MvList = Moves
     ),
     format("Player ~w has moves: ~w~n", [Plyr, MvList]).
@@ -264,7 +270,7 @@ testFlip(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 	X1 is X + DirX,
 	Y1 is Y + DirY,
-	X1 >= 0, X1 =< 5, Y1 >= 0, Y1 =< 5,
+	inBounds(X, Y),
 	(
 		get(State, [X1, Y1], Plyr),
 		NewState = State
@@ -304,6 +310,7 @@ checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]) :-
 	number(X), number(Y),
 	X1 is X + DirX,
 	Y1 is Y + DirY,
+	inBounds(X, Y),
 	(
 		get(State, [X1, Y1], Plyr) 
 	;
@@ -311,7 +318,10 @@ checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]) :-
 		checkDir(Plyr, State, Opponent, [X1, Y1], [DirX, DirY])
 	). 
 
-
+inBounds(X, Y) :-
+	number(X), number(Y),
+	X >= 0, X =< 5,
+    Y >= 0, Y =< 5.
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
