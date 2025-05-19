@@ -114,6 +114,7 @@ winner(State, Plyr) :-
 
 % ; binds harder?
 winnerIs(State, Plyr) :-
+	write('starting function winnerIs'),
 	 (
 		setof(Position, get(State, Position, 1),ListPlyr1), 
 		length(ListPlyr1, Plyr1Score)
@@ -126,7 +127,6 @@ winnerIs(State, Plyr) :-
 		; 
 		Plyr2Score is 0
 	),
-	!,
 	((Plyr1Score < Plyr2Score) -> Plyr = 1 ; (Plyr2Score < Plyr1Score) -> Plyr = 2). 
 
 
@@ -150,14 +150,14 @@ notFunc(Statment).
 tie(State) :- 
 	terminal(State),
 	 (
-		setof(Position, get(State, Position, 1),ListPlyr1), 
-		length(ListPlyr1, Plyr1Score)
+		(setof(Position, get(State, Position, 1),ListPlyr1), 
+		length(ListPlyr1, Plyr1Score))
 		; 
 		Plyr1Score is 0
 	),
 	(
-		setof(Position, get(State, Position, 2),ListPlyr2),
-		length(ListPlyr1, Plyr2Score)
+		(setof(Position, get(State, Position, 2),ListPlyr2),
+		length(ListPlyr1, Plyr2Score))
 		; 
 		Plyr2Score is 0
 	),
@@ -172,8 +172,8 @@ tie(State) :-
 %   - true if State is a terminal   
 
 terminal(State) :- 
-    \+ (moves(1, State, MvList1), MvList1 \= [n]),
-    \+ (moves(2, State, MvList2), MvList2 \= [n]).
+    (moves(1, State, MvList1), MvList1 == [n]),
+    (moves(2, State, MvList2), MvList2 == [n]).
 
 
 
@@ -207,13 +207,18 @@ printList([H | L]) :-
 %
 
 moves(Plyr, State, MvList) :-
-	findall(inBounds(X, Y), validmove(Plyr, State, [X, Y]), Moves),
+	writeln('starting function moves'),
+	findall([X, Y], validmove(Plyr, State, [X, Y]), Moves),
+	writeln(Moves),
+	writeln('starting cool if'),
     (
-        Moves = [] -> MvList = [n]
-		;
-        MvList = Moves
+        (Moves = [] -> Moves = [n]) ; true
+		%;
+		%(MvList = Moves)
     ),
-    format("Player ~w has moves: ~w~n", [Plyr, MvList]).
+	writeln('trying to format'),
+    format("Player ~w has moves: ~w~n", [Plyr, Moves]),
+	writeln('succeded to format').
 
 
 
@@ -229,18 +234,12 @@ moves(Plyr, State, MvList) :-
 %
 
 nextState(Plyr, Move, State, NewState, NextPlyr) :-
+	write('starting function nextState'),
 	validmove(Plyr, State, Move), 
-	flipAllDirection(Plyr, State, Move, NewState), !,
+	set(State, NewState, Move, Plyr),
+	%flipAllDirection(Plyr, State, Move, NewState),
 	showState(NewState),
-	newPlyr(Plyr, NewState, NextPlyr), 
-	!.
-
-newPlyr(Plyr, State, NextPlyr) :-
-	opponent(Plyr, Opponent), 
-	moves(Opponent, State, MvList),
-	moves(Plyr, State, MvList),
-	length(MvList, X),
-	(X > 0 -> NextPlyr = Opponent ; NextPlyr = Plyr). 
+	opponent(Plyr, NextPlyr).
 
 flipAllDirection(Plyr, State, Move, NewState) :-
 	writeln('Trying to flip now: '),
@@ -257,10 +256,11 @@ flipAllDirection(Plyr, State, Move, NewState) :-
 	showState(FinalState).
 
 testFlip(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
+	write('starting function testFlip'),
 	(
-		checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]) ->
+		(	checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]),
 			flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], TempState),
-			set(TempState, NewState, [X, Y], Plyr)
+			set(TempState, NewState, [X, Y], Plyr))
 
 		;
 			NewState = State
@@ -268,6 +268,7 @@ testFlip(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 
 
 flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
+	write('starting function flipDir \n'),
 	X1 is X + DirX,
 	Y1 is Y + DirY,
 	inBounds(X, Y),
@@ -283,6 +284,7 @@ flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 
 
 opponent(Plyr, Opponent) :-
+	write('starting function opponent \n'),
 	(Plyr == 1 -> Opponent is 2 ; Opponent is 1). 
 
 
@@ -294,29 +296,35 @@ opponent(Plyr, Opponent) :-
 %   - true if Proposed move by Plyr is valid at State.
 
 validmove(Plyr, State, Proposed) :- 
+	write('starting function validmove \n'),
 	opponent(Plyr, Opponent), 
 	get(State, Proposed, '.'),
 	directions(Dirs),
 	member([DirX, DirY], Dirs),
-	checkDirection(Plyr, State,  Opponent, Proposed, [DirX, DirY]).
+	checkDirection(Plyr, State,  Opponent, Proposed, [DirX, DirY]),
+	writeln('finishing validmove').
 
 checkDirection(Plyr, State,  Opponent, [X, Y], [DirX, DirY]) :-
+	%write('starting function checkDirection \n'),
 	X1 is X + DirX,
 	Y1 is Y + DirY,
 	get(State, [X1, Y1], Opponent), 
-	checkDir(Plyr, State,  Opponent, [X1, Y1], [DirX, DirY]). 
+	checkDir(Plyr, State,  Opponent, [X1, Y1], [DirX, DirY]),
+	!.
+	%write('finishing checkdirections \n'). 
 
 checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]) :-
-	number(X), number(Y),
+	%write('starting function chekcDir \n'),
 	X1 is X + DirX,
 	Y1 is Y + DirY,
 	inBounds(X, Y),
 	(
 		get(State, [X1, Y1], Plyr) 
 	;
-		get(State, [X1, Y1], Opponent),
-		checkDir(Plyr, State, Opponent, [X1, Y1], [DirX, DirY])
-	). 
+		(get(State, [X1, Y1], Opponent),
+		checkDir(Plyr, State, Opponent, [X1, Y1], [DirX, DirY]))
+	).
+	%write('finishing checkdir \n'). 
 
 inBounds(X, Y) :-
 	number(X), number(Y),
@@ -337,6 +345,7 @@ inBounds(X, Y) :-
 %          good heuristics.
 
 h(State, Val) :-
+	write('starting function h'),
 	terminal(State), 
 	(
 		winnerIs(State, 2) -> Val is 100
@@ -345,6 +354,8 @@ h(State, Val) :-
 		;
 		tie(State) -> Val is 0
 	).
+h(State, 0).
+	
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.

@@ -77,7 +77,7 @@ subListJ([Head | Tail], N, [Head | Result]) :-
     N > 0,
     N1 is N - 1,
     subListJ(Tail, N1, Result).
-subListJ([], _, []).  % guard for too-short input
+subListJ([], _, []). 
 
 % Combine dropping and taking: sublist from I to J
 subList(List, I, J, Sub) :-

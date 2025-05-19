@@ -93,11 +93,14 @@ playgame(_,State) :-
   tie(State), !, 
   writeln('Game ended with no winner!'). 
  
-playgame(Plyr,State) :- 
+playgame(Plyr,State) :-
+  writeln('playgame no tie/winner'),
   getmove(Plyr,State,Move), 
   write('The move chosen is : '), 
   writeln(Move), 
+  writeln('starting nextState in playfile'),
   nextState(Plyr,Move,State,NewState,NextPlyr), 
+  writeln('finishing nextState in playfile'),
   playgame(NextPlyr,NewState). 
  
  
@@ -130,9 +133,10 @@ getmove(1,State,Move) :-
 %  Depth should be set appropriately below.
  
 getmove(2,State,Move) :- 
+  writeln('starting getmove player2'),
   showState(State), 
   writeln('Computer is moving...'),
-  MaxDepth is 6, % max depth is here set to 6
+  MaxDepth is 2, % max depth is here set to 6
   mmeval(2,State,_,Move,MaxDepth,SeF), 
   write('Computer move computed by searching '), 
   write(SeF), 
@@ -219,13 +223,15 @@ evalMoves(1,St,[Mv|Rest],ValSoFar,MvSoFar,Val,BestMv,D,Se,SeF) :-
  
  
 evalMoves(2,St,[Mv|Rest],ValSoFar,MvSoFar,Val,BestMv,D,Se,SeF) :- 
+  write('starting evalmoves 2'),
   nextState(2,Mv,St,NewSt,NextPlyr), !,
 %  write('evalMoves 2: '), write(Mv), write(' D='), write(D), write(' S='), write(Se), showState(NewSt),
   Dnew is D - 1, 
   mmeval(NextPlyr,NewSt,MvVal,_,Dnew,SeI),  !,
   minMove(ValSoFar,MvSoFar,MvVal,Mv,NewValSoFar,NewMvSoFar), 
   SeNew is Se + SeI, 
-  evalMoves(2,St,Rest,NewValSoFar,NewMvSoFar,Val,BestMv,D,SeNew,SeF). 
+  evalMoves(2,St,Rest,NewValSoFar,NewMvSoFar,Val,BestMv,D,SeNew,SeF)
+  ,write('finishing evalmoves 2'). 
  
 %% Return the max of best so far and the current move. 
 maxMove(V1,M1,V2,_,V1,M1) :- V1 >= V2. 
