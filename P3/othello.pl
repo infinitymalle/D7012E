@@ -123,11 +123,11 @@ winnerIs(State, Plyr) :-
 	),
 	(
 		setof(Position, get(State, Position, 2),ListPlyr2),
-		length(ListPlyr1, Plyr2Score)
+		length(ListPlyr2, Plyr2Score)
 		; 
 		Plyr2Score is 0
 	),
-	((Plyr1Score < Plyr2Score) -> Plyr = 1 ; (Plyr2Score < Plyr1Score) -> Plyr = 2). 
+	((Plyr1Score < Plyr2Score) -> Plyr = 1 ; (Plyr2Score < Plyr1Score) -> Plyr = 2), !. 
 
 
 % Just a not function
@@ -157,11 +157,11 @@ tie(State) :-
 	),
 	(
 		(setof(Position, get(State, Position, 2),ListPlyr2),
-		length(ListPlyr1, Plyr2Score))
+		length(ListPlyr2, Plyr2Score))
 		; 
 		Plyr2Score is 0
 	),
-	Plyr1Score == Plyr2Score. 
+	Plyr1Score == Plyr2Score, !. 
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
@@ -172,8 +172,8 @@ tie(State) :-
 %   - true if State is a terminal   
 
 terminal(State) :- 
-    (moves(1, State, MvList1), MvList1 == [n]),
-    (moves(2, State, MvList2), MvList2 == [n]).
+    (moves(1, State, MvList1), MvList1 == ['n']),
+    (moves(2, State, MvList2), MvList2 == ['n']), !.
 
 
 
@@ -208,17 +208,14 @@ printList([H | L]) :-
 
 moves(Plyr, State, MvList) :-
 	writeln('starting function moves'),
-	findall([X, Y], validmove(Plyr, State, [X, Y]), Moves),
+	findall([X, Y], validmove(Plyr, State, [X, Y]), Moves), !,
+	%writeln('starting cool if'),
+    (Moves = [] -> Moves = ['n']) ; true,
+	MvList = Moves, !,
 	writeln(Moves),
-	writeln('starting cool if'),
-    (
-        (Moves = [] -> Moves = [n]) ; true
-		%;
-		%(MvList = Moves)
-    ),
 	writeln('trying to format'),
     format("Player ~w has moves: ~w~n", [Plyr, Moves]),
-	writeln('succeded to format').
+	writeln('succeded to format'), !.
 
 
 
@@ -236,12 +233,12 @@ moves(Plyr, State, MvList) :-
 nextState(Plyr, Move, State, NewState, NextPlyr) :-
 	write('starting function nextState'),
 	validmove(Plyr, State, Move), 
-	set(State, NewState, Move, Plyr),
-	%flipAllDirection(Plyr, State, Move, NewState),
+	%set(State, NewState, Move, Plyr), 
+	flipAllDirection(Plyr, State, Move, NewState),
 	showState(NewState),
 	opponent(Plyr, NextPlyr).
 
-flipAllDirection(Plyr, State, Move, NewState) :-
+flipAllDirection(Plyr, State, Move, FinalState) :-
 	writeln('Trying to flip now: '),
     opponent(Plyr, Opponent),
     testFlip(Plyr, State, Opponent, Move, [0, -1], S1),    % North
@@ -253,7 +250,7 @@ flipAllDirection(Plyr, State, Move, NewState) :-
     testFlip(Plyr, S6,   Opponent, Move, [-1, 0], S7),     % West
     testFlip(Plyr, S7,   Opponent, Move, [-1, -1], FinalState),  % NorthWest
 	writeln('Done flipping: '), 
-	showState(FinalState).
+	showState(FinalState), !.
 
 testFlip(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 	write('starting function testFlip'),
@@ -271,7 +268,7 @@ flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 	write('starting function flipDir \n'),
 	X1 is X + DirX,
 	Y1 is Y + DirY,
-	inBounds(X, Y),
+	inBounds(X1, Y1),
 	(
 		get(State, [X1, Y1], Plyr),
 		NewState = State
@@ -284,7 +281,7 @@ flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 
 
 opponent(Plyr, Opponent) :-
-	write('starting function opponent \n'),
+	%write('starting function opponent \n'),
 	(Plyr == 1 -> Opponent is 2 ; Opponent is 1). 
 
 
@@ -296,13 +293,13 @@ opponent(Plyr, Opponent) :-
 %   - true if Proposed move by Plyr is valid at State.
 
 validmove(Plyr, State, Proposed) :- 
-	write('starting function validmove \n'),
+	%write('starting function validmove \n'),
 	opponent(Plyr, Opponent), 
 	get(State, Proposed, '.'),
 	directions(Dirs),
 	member([DirX, DirY], Dirs),
-	checkDirection(Plyr, State,  Opponent, Proposed, [DirX, DirY]),
-	writeln('finishing validmove').
+	checkDirection(Plyr, State,  Opponent, Proposed, [DirX, DirY]), !.
+	%writeln('finishing validmove'), !.
 
 checkDirection(Plyr, State,  Opponent, [X, Y], [DirX, DirY]) :-
 	%write('starting function checkDirection \n'),

@@ -133,7 +133,7 @@ getmove(1,State,Move) :-
 %  Depth should be set appropriately below.
  
 getmove(2,State,Move) :- 
-  writeln('starting getmove player2'),
+  %writeln('starting getmove player2'),
   showState(State), 
   writeln('Computer is moving...'),
   MaxDepth is 2, % max depth is here set to 6
