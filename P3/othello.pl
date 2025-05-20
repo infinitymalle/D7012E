@@ -66,9 +66,6 @@ directions(
 %    2 means player two has a stone in this position. 
 
 
-
-
-
 % DO NOT CHANGE THE COMMENT BELOW.
 %
 % given helper: Inital state of the board
@@ -80,7 +77,10 @@ initBoard([ [.,.,.,.,.,.],
         	[.,.,.,.,.,.], 
 	    	[.,.,.,.,.,.] ]).
 
-%initialize(InitialState, 1) :- initBoard(InitialState).
+%initialize(InitialState, 1) :- rndBoardXYZ(InitialState).
+
+
+initialize(InitialState, 1) :- initBoard(InitialState).
 
 
 % initialize(InitialState,1):- flipRLtop(InitialState). %%Funkar
@@ -134,7 +134,7 @@ winner(State, Plyr) :-
 
 % ; binds harder?
 winnerIs(State, Plyr) :-
-	writeln('starting function winnerIs'),
+	%writeln('starting function winnerIs'),
 	 (
 		(setof(Position, get(State, Position, 1),ListPlyr1)
 	 -> length(ListPlyr1, Plyr1Score)
@@ -145,8 +145,8 @@ winnerIs(State, Plyr) :-
 		(setof(Position, get(State, Position, 2),ListPlyr2)-> 
 		length(ListPlyr2, Plyr2Score)
 		; 
-		writeln('why are u running2'),
-	Plyr2Score is 0)
+		%writeln('why are u running2'),
+		Plyr2Score is 0)
 	),
 	((Plyr1Score < Plyr2Score) -> Plyr = 1 ; (Plyr2Score < Plyr1Score) -> Plyr = 2),
 	writeln(Plyr1Score),
@@ -184,12 +184,12 @@ tie(State) :-
 %   - true if State is a terminal   
 
 terminal(State) :- 
-	write('starting terminal*'),
+	%write('starting terminal*'),
     (moves(1, State, MvList1), MvList1 == [n]),
-	writeln('mvlist1: '),
-		writeln(MvList1),
-    (moves(2, State, MvList2), MvList2 == [n]),
-	writeln(MvList2).
+	%writeln('mvlist1: '),
+	%writeln(MvList1),
+    (moves(2, State, MvList2), MvList2 == [n]).
+	%writeln(MvList2).
 
 
 
@@ -223,14 +223,15 @@ printList([H | L]) :-
 %
 
 moves(Plyr, State, Moves) :-
-	writeln('starting function moves'),
+	%writeln('starting function moves'),
 	setof([X, Y], validmove(Plyr, State, [X, Y]), Moves),
 	writeln(Moves),
-	writeln('trying to format'),
-    format("Player ~w has moves: ~w~n", [Plyr, Moves]),
-	writeln('succeded to format').
+	%writeln('trying to format'),
+    format("Player ~w has moves: ~w~n", [Plyr, Moves]).
+	%writeln('succeded to format').
+
 moves(Plyr, State, [n]) :-
-	writeln('moves with [n]'),
+	%writeln('moves with [n]'),
 	\+ setof([X,Y], validmove(Plyr, State, [X, Y]), Moves).
 
 
@@ -250,10 +251,10 @@ nextState(Plyr, [n], State, State, NextPlyr) :-
 	opponent(Plyr, NextPlyr).
 
 nextState(Plyr, Move, State, NewState, NextPlyr) :-
-	writeln('starting function nextState'),
-	writeln(Plyr),
-	writeln(Move),
-	showState(State),
+	%writeln('starting function nextState'),
+	%writeln(Plyr),
+	%writeln(Move),
+	%showState(State),
 	validmove(Plyr, State, Move), 
 	%set(State, NewState, Move, Plyr), 
 	flipAllDirection(Plyr, State, Move, NewState),
@@ -261,7 +262,7 @@ nextState(Plyr, Move, State, NewState, NextPlyr) :-
 	opponent(Plyr, NextPlyr).
 
 flipAllDirection(Plyr, State, Move, FinalState) :-
-	writeln('Trying to flip now: '),
+	%writeln('Trying to flip now: '),
     opponent(Plyr, Opponent),
     testFlip(Plyr, State, Opponent, Move, [0, -1], S1),    % North
     testFlip(Plyr, S1,   Opponent, Move, [1, -1], S2),     % NorthEast
@@ -270,12 +271,12 @@ flipAllDirection(Plyr, State, Move, FinalState) :-
     testFlip(Plyr, S4,   Opponent, Move, [0, 1], S5),      % South
     testFlip(Plyr, S5,   Opponent, Move, [-1, 1], S6),     % SouthWest
     testFlip(Plyr, S6,   Opponent, Move, [-1, 0], S7),     % West
-    testFlip(Plyr, S7,   Opponent, Move, [-1, -1], FinalState),  % NorthWest
-	writeln('Done flipping: '), 
-	showState(FinalState).
+    testFlip(Plyr, S7,   Opponent, Move, [-1, -1], FinalState).  % NorthWest
+	%writeln('Done flipping: '), 
+	%showState(FinalState).
 
 testFlip(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
-	write('starting function testFlip'),
+	%write('starting function testFlip'),
 	(
 		(	checkDir(Plyr, State, Opponent, [X, Y], [DirX, DirY]),
 			flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], TempState),
@@ -287,7 +288,7 @@ testFlip(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 
 
 flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
-	write('starting function flipDir \n'),
+	%write('starting function flipDir \n'),
 	X1 is X + DirX,
 	Y1 is Y + DirY,
 	inBounds(X1, Y1),

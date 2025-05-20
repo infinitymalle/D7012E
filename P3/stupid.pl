@@ -126,7 +126,7 @@ getmove(2,State,Move) :-
     showState(State),
     currentScoreXYZ(State),
     writeln('Computer is moving...'),
-    MaxDepth is 2, % max depth is here set to 4
+    MaxDepth is 4, % max depth is here set to 4
     mmeval(2,State,_,Move,MaxDepth,SeF), 
     write('Computer move computed by searching '), 
     write(SeF), 
@@ -172,7 +172,7 @@ mmeval(1,St,Val,BestMv,D,SeF) :-
 mmeval(2,St,Val,BestMv,D,SeF) :- 
   moves(2,St,MvList), !,
 % length(MvList,L), 
-% write('Evaluating '), write(L), write(' moves for Plyr 2 at depth '), writeln(D), 
+ write('Evaluating '), write(L), write(' moves for Plyr 2 at depth '), writeln(D), 
   upperBound(B), % a value strictly less than worst value max can get 
   evalMoves(2,St,MvList,B,null,Val,BestMv,D,0,SeI), % Best so far set to upperbnd 
   SeF is SeI + 1. 
