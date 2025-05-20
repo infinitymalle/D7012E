@@ -223,7 +223,7 @@ evalMoves(1,St,[Mv|Rest],ValSoFar,MvSoFar,Val,BestMv,D,Se,SeF) :-
  
  
 evalMoves(2,St,[Mv|Rest],ValSoFar,MvSoFar,Val,BestMv,D,Se,SeF) :- 
-  write('starting evalmoves 2'),
+  %write('starting evalmoves 2'),
   nextState(2,Mv,St,NewSt,NextPlyr), !,
 %  write('evalMoves 2: '), write(Mv), write(' D='), write(D), write(' S='), write(Se), showState(NewSt),
   Dnew is D - 1, 
@@ -231,7 +231,7 @@ evalMoves(2,St,[Mv|Rest],ValSoFar,MvSoFar,Val,BestMv,D,Se,SeF) :-
   minMove(ValSoFar,MvSoFar,MvVal,Mv,NewValSoFar,NewMvSoFar), 
   SeNew is Se + SeI, 
   evalMoves(2,St,Rest,NewValSoFar,NewMvSoFar,Val,BestMv,D,SeNew,SeF)
-  ,write('finishing evalmoves 2'). 
+  .%write('finishing evalmoves 2'). 
  
 %% Return the max of best so far and the current move. 
 maxMove(V1,M1,V2,_,V1,M1) :- V1 >= V2. 

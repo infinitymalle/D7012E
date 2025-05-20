@@ -11,7 +11,7 @@
 
 
 %do not chagne the follwoing line!
-:- ensure_loaded('play.pl').
+%:- ensure_loaded('play.pl').
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
@@ -148,9 +148,9 @@ winnerIs(State, Plyr) :-
 		%writeln('why are u running2'),
 		Plyr2Score is 0)
 	),
-	((Plyr1Score < Plyr2Score) -> Plyr = 1 ; (Plyr2Score < Plyr1Score) -> Plyr = 2),
-	writeln(Plyr1Score),
-	writeln(Plyr2Score). 
+	((Plyr1Score < Plyr2Score) -> Plyr = 1 ; (Plyr2Score < Plyr1Score) -> Plyr = 2).
+	%writeln(Plyr1Score),
+	%writeln(Plyr2Score). 
 
 
 % Just a not function
@@ -225,7 +225,7 @@ printList([H | L]) :-
 moves(Plyr, State, Moves) :-
 	%writeln('starting function moves'),
 	setof([X, Y], validmove(Plyr, State, [X, Y]), Moves),
-	writeln(Moves),
+	%writeln(Moves),
 	%writeln('trying to format'),
     format("Player ~w has moves: ~w~n", [Plyr, Moves]).
 	%writeln('succeded to format').
@@ -296,7 +296,7 @@ flipDir(Plyr, State, Opponent, [X, Y], [DirX, DirY], NewState) :-
 		(get(State, [X1, Y1], Plyr),
 		NewState = State)
 		;
-		(writeln(flip(X1, Y1)),
+		(%writeln(flip(X1, Y1)),
 		set(State, TempState, [X1, Y1], Plyr),
 		flipDir(Plyr, TempState, Opponent, [X1, Y1], [DirX, DirY], NewState))
 		
@@ -369,7 +369,7 @@ inBounds(X, Y) :-
 %          good heuristics.
 
 h(State, Val) :-
-	write('starting function h'),
+	%write('starting function h'),
 	terminal(State), 
 	(
 		winnerIs(State, 2) -> Val is 100
@@ -378,7 +378,7 @@ h(State, Val) :-
 		;
 		tie(State) -> Val is 0
 	).
-h(State, 0).
+h(State, 0):- \+(terminal(State)).
 	
 
 
@@ -391,7 +391,7 @@ h(State, 0).
 %     of all states.
 
 
-lowerBound(-101).
+lowerBound(-1001).
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
@@ -403,7 +403,7 @@ lowerBound(-101).
 %     of all states.
 
 
-upperBound(101).
+upperBound(1001).
 
 
 % DO NOT CHANGE THIS BLOCK OF COMMENTS.
