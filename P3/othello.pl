@@ -129,8 +129,8 @@ initialize(InitialState, 1) :- initBoard(InitialState).
 
 winner(State, Plyr) :- 
 	terminal(State), 
-	winnerIs(State, Plyr), 
-	showState(State).
+	winnerIs(State, Plyr). 
+	%showState(State).
 
 % ; binds harder?
 winnerIs(State, Plyr) :-
@@ -224,10 +224,10 @@ printList([H | L]) :-
 
 moves(Plyr, State, Moves) :-
 	%writeln('starting function moves'),
-	setof([X, Y], validmove(Plyr, State, [X, Y]), Moves),
+	setof([X, Y], validmove(Plyr, State, [X, Y]), Moves).
 	%writeln(Moves),
 	%writeln('trying to format'),
-    format("Player ~w has moves: ~w~n", [Plyr, Moves]).
+    %format("Player ~w has moves: ~w~n", [Plyr, Moves]).
 	%writeln('succeded to format').
 
 moves(Plyr, State, [n]) :-
@@ -258,7 +258,7 @@ nextState(Plyr, Move, State, NewState, NextPlyr) :-
 	validmove(Plyr, State, Move), 
 	%set(State, NewState, Move, Plyr), 
 	flipAllDirection(Plyr, State, Move, NewState),
-	showState(NewState),
+	%showState(NewState),
 	opponent(Plyr, NextPlyr).
 
 flipAllDirection(Plyr, State, Move, FinalState) :-
