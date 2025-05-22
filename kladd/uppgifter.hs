@@ -180,3 +180,13 @@ oneLookupFirst (x:xs) y
 
 -- 12.5
 
+
+z ::[Double]
+z = zHelper 1
+
+zHelper :: Double -> [Double]
+zHelper a = (a/2) : zHelper (a/2)
+
+myFoldr :: (a -> b -> b) -> b -> [a] -> b
+myFoldr f x (y:xy) = f y (myFoldr f x xy)
+
